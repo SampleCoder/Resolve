@@ -1,42 +1,33 @@
+/**
+    Test dns resolving module, more CPP-like.
+*/
 #include <iostream>
-#include <string>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netdb.h>
-#include <cstring>
-#include <arpa/inet.h>
-#include <cstdio>
-#include <cstdlib>
+#include "creslv.h"
+
+void print_usage()
+{
+    std::cerr << "Usage: reslv <www-address>" << std::endl;
+}
 
 int main(int argc, char *argv[])
 {
-    struct addrinfo *paddr, *head;
-    struct addrinfo addr_req;
-    if (argc < 2) {
-        fprintf(stderr, "Usage: %s <address>.\n", argv[0]);
-        return 1;
-    }
-    // std::cout << "Resolving " << argv[1] << std::endl;
-    memset(&addr_req, 0, sizeof(addr_req));
-    addr_req.ai_family = AF_INET;
-    addr_req.ai_socktype = SOCK_STREAM;
-    char ip[INET_ADDRSTRLEN];
-    struct sockaddr_in *sin = NULL;
-    int r = 0;
-    r = getaddrinfo(argv[1], NULL, &addr_req, &head);
-    if (r == 0) {
-        for (paddr = head; paddr; paddr = paddr->ai_next) {
-            if (r == 0) {
-                sin = (struct sockaddr_in *)paddr->ai_addr;
-                if (inet_ntop(AF_INET, &sin->sin_addr, ip, sizeof(ip)))
-                    std::cout << ip << std::endl;
-                else
-                    perror("inet_ntop()");
-            }
+    if (argc == 2) {
+        C_Reslv resolver(argv[1]);
+        if (resolver.Err() == 0) {
+            const struct sockaddr_in *paddr;
+            char buf[INET_ADDRSTRLEN];
+            do {
+                paddr = resolver.Get();
+                if (inet_ntop(AF_INET, (const void *)&paddr->sin_addr, buf, sizeof(buf)))
+                    std::cout << "[IP] => " << buf << std::endl;
+            } while (resolver.Next());
         }
-        freeaddrinfo(head);
+        else {
+            std::cerr << resolver.ErrDesc() << std::endl;
+        }
     }
-    else
-        std::cerr << gai_strerror(r) << std::endl;
+    else {
+        print_usage();
+    }
     return 0;
 }
