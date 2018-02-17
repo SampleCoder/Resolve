@@ -1,3 +1,5 @@
 # Resolve
 
-How to find IP address on Linux (possibly portable ?) in cpp-way.
+Get ip address.
+Use STL where possible.
+
