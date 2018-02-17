@@ -10,8 +10,13 @@ C_Reslv::C_Reslv(const char *wwwaddr)
     ai_hints.ai_family = AF_INET;
     ai_hints.ai_socktype = SOCK_STREAM;
     err = getaddrinfo(wwwaddr, NULL, &ai_hints, &pai_head);
-    if (err == 0)
+    if (err == 0) {
         pai_addr = pai_head;
+        for (;pai_addr; pai_addr = pai_addr->ai_next) {
+			list.push_back(*(const struct sockaddr_in *)pai_addr->ai_addr);
+		}
+		curelem = list.begin();
+	}
     else {
         pai_head = NULL;
         pai_addr = NULL;
@@ -34,22 +39,22 @@ const char *C_Reslv::ErrDesc()
     return gai_strerror(err);
 }
 
-const struct sockaddr_in *C_Reslv::Get()
+struct sockaddr_in C_Reslv::Get()
 {
-    const struct sockaddr_in *ip_addr = NULL;
-    if (pai_addr)
-        ip_addr = (const struct sockaddr_in *)pai_addr->ai_addr;
-    return ip_addr;
+	struct sockaddr_in addr { 0 };
+	if (!list.empty())
+		addr = *curelem;
+    return addr;
 }
 
 void C_Reslv::First()
 {
-    pai_addr = pai_head;
+	if (!list.empty())
+		curelem = list.begin();
 }
 
 bool C_Reslv::Next()
 {
-    if (pai_addr)
-        pai_addr = pai_addr->ai_next;
-    return pai_addr != NULL;
+	curelem++;
+    return curelem != list.end();
 }

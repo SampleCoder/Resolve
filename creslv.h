@@ -5,6 +5,7 @@
 #include <arpa/inet.h>
 #include <netdb.h>
 #include <cstring>
+#include <vector>
 
 class C_Reslv {
 private:
@@ -16,7 +17,9 @@ public:
     ~C_Reslv();
     int Err();
     const char *ErrDesc();
-    const struct sockaddr_in *Get();
+    struct sockaddr_in Get();
     void First();
     bool Next();
+    std::vector<struct sockaddr_in> list;
+    std::vector<struct sockaddr_in>::iterator curelem;
 };

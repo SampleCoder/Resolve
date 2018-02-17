@@ -14,11 +14,11 @@ int main(int argc, char *argv[])
     if (argc == 2) {
         C_Reslv resolver(argv[1]);
         if (resolver.Err() == 0) {
-            const struct sockaddr_in *paddr;
+            struct sockaddr_in addr;
             char buf[INET_ADDRSTRLEN];
             do {
-                paddr = resolver.Get();
-                if (inet_ntop(AF_INET, (const void *)&paddr->sin_addr, buf, sizeof(buf)))
+                addr = resolver.Get();
+                if (inet_ntop(AF_INET, (const void *)&addr.sin_addr, buf, sizeof(buf)))
                     std::cout << "[IP] => " << buf << std::endl;
             } while (resolver.Next());
         }
